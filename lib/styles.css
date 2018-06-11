@@ -17,17 +17,14 @@ div#container {
     user-select: none;
 }
 
-div.group {
+div.group, div.step {
+    cursor: pointer;
     position: absolute;
-    /* border: solid 3px black;
-    box-sizing: border-box;
-    padding: 5px; */
+    box-sizing: border-box;    
 }
 
 div.step {
-    position: absolute;
     border: dotted 2px black;
-    box-sizing: border-box;
 }
 
 div.tag {
@@ -40,6 +37,10 @@ div.tag {
     transform: translateY(-50%);
 }
 
+.shadow {
+    box-shadow: 0 0 30px 5px #999;
+}
+
 div.hit {
     background: lightgreen;
 }
@@ -48,3 +49,9 @@ div.step.grouped {
     background: rgba(0, 0, 0, 0.0);
     pointer-events: none;
 }
+
+/* div.group {
+    border: solid 3px black;
+    box-sizing: border-box;
+    padding: 5px;
+} */

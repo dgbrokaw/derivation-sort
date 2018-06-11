@@ -78,15 +78,21 @@ function setupDrag(element) {
         startY = evt.clientY;
         document.onmousemove = elementDrag;
         document.onmouseup = closeDragElement;
+        
         derivationSteps.forEach(step => {
             wasNotHit(step);
             step.style["z-index"] = 0;
         });
+        
         element.style["z-index"] = 1;
+        element.classList.add("shadow");
+
         previousStep = getPreviousStep(element);
         if (previousStep) previousBox = calculateBottomHitBox(previousStep);
+        
         nextStep = getNextStep(element);
         if (nextStep) nextBox = calculateTopHitBox(nextStep);
+        
         handleCollisions(element, previousStep, previousBox, nextStep, nextBox);
     }
 
@@ -107,6 +113,7 @@ function setupDrag(element) {
         /* stop moving when mouse button is released:*/
         document.onmouseup = null;
         document.onmousemove = null;
+        element.classList.remove("shadow");
         handleSnaps(element, previousStep, previousBox, nextStep, nextBox);
     }
 }
@@ -185,9 +192,6 @@ function wasHit(element) {
 }
 
 function wasNotHit(element) {
-    if (!element) {
-        debugger;
-    }
     element.classList.remove("hit");
 }
 
@@ -223,8 +227,8 @@ function createGroupElement(element1, element2) {
     let top = element1.offsetTop;
     container.removeChild(element1);
     container.removeChild(element2);
-    element1.classList.remove("hit");
-    element2.classList.remove("hit");
+    wasNotHit(element1);
+    wasNotHit(element2);
     element1.classList.add("grouped");
     element2.classList.add("grouped");
     
