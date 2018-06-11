@@ -17,6 +17,13 @@ div#container {
     user-select: none;
 }
 
+div.group {
+    position: absolute;
+    /* border: solid 3px black;
+    box-sizing: border-box;
+    padding: 5px; */
+}
+
 div.step {
     position: absolute;
     border: dotted 2px black;
@@ -33,6 +40,11 @@ div.tag {
     transform: translateY(-50%);
 }
 
-div.step.hit {
+div.hit {
     background: lightgreen;
+}
+
+div.step.grouped {
+    background: rgba(0, 0, 0, 0.0);
+    pointer-events: none;
 }
