@@ -2,10 +2,12 @@ let margin = 50;
 
 function px(str) { return str + 'px' }
 
+let container;
+let stepDimensions;
 let derivationSteps = [];
 function initDerivationSteps(containerId, numberOfSteps) {
-    let container = document.getElementById(containerId);
-    let stepDimensions = calculateStepDimensions(container, numberOfSteps, margin);
+    container = document.getElementById(containerId);
+    stepDimensions = calculateStepDimensions(container, numberOfSteps, margin);
     let stepPositions = calculateStepPositions(stepDimensions, numberOfSteps, margin);
     createDerivationSteps(container, stepDimensions, stepPositions);
 }
@@ -76,11 +78,16 @@ function setupDrag(element) {
         startY = evt.clientY;
         document.onmousemove = elementDrag;
         document.onmouseup = closeDragElement;
-        derivationSteps.forEach(wasNotHit);
+        derivationSteps.forEach(step => {
+            wasNotHit(step);
+            step.style["z-index"] = 0;
+        });
+        element.style["z-index"] = 1;
         previousStep = getPreviousStep(element);
         if (previousStep) previousBox = calculateBottomHitBox(previousStep);
         nextStep = getNextStep(element);
         if (nextStep) nextBox = calculateTopHitBox(nextStep);
+        handleCollisions(element, previousStep, previousBox, nextStep, nextBox);
     }
 
     function elementDrag(evt) {
@@ -93,17 +100,7 @@ function setupDrag(element) {
         // set the element's new position:
         element.style.top = (element.offsetTop - currY) + "px";
         element.style.left = (element.offsetLeft - currX) + "px";
-        let collisionWithPrevious = false;
-        let collisionWithNext = false;
-        if (previousBox) {
-            collisionWithPrevious = collision(previousBox, calculateTopHitBox(element));
-            handleCollision(previousStep, collisionWithPrevious);
-        }
-        if (nextBox) {
-            collisionWithNext = collision(nextBox, calculateBottomHitBox(element));
-            handleCollision(nextStep, collisionWithNext);
-        }
-        handleCollision(element, collisionWithPrevious || collisionWithNext);
+        handleCollisions(element, previousStep, previousBox, nextStep, nextBox);
     }
     
     function closeDragElement() {
@@ -158,6 +155,20 @@ function collision(rect1, rect2) {
             return true;
     }
     return false;
+}
+
+function handleCollisions(element, previousStep, previousBox, nextStep, nextBox) {
+    let collisionWithPrevious = false;
+    let collisionWithNext = false;
+    if (previousBox) {
+        collisionWithPrevious = collision(previousBox, calculateTopHitBox(element));
+        handleCollision(previousStep, collisionWithPrevious);
+    }
+    if (nextBox) {
+        collisionWithNext = collision(nextBox, calculateBottomHitBox(element));
+        handleCollision(nextStep, collisionWithNext);
+    }
+    handleCollision(element, collisionWithPrevious || collisionWithNext);
 }
 
 function handleCollision(element, collision) {
