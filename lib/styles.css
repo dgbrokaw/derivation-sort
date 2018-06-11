@@ -1,0 +1,38 @@
+body {
+    font: 36px Arial, sans-serif;
+}
+
+div#container {
+    position: relative;
+    margin-top: 5%;
+    width: 100vw;
+    height: 40vw;
+    max-width: 100%;
+    max-height: 90%;
+    border: solid 5px black;
+    box-sizing: border-box;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+div.step {
+    position: absolute;
+    border: dotted 2px black;
+    box-sizing: border-box;
+}
+
+div.tag {
+    max-width: 50%;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+div.step.hit {
+    background: lightgreen;
+}
