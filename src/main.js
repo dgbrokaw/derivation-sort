@@ -136,22 +136,30 @@ function getNextStep(element) {
     }
 }
 
+// So touching corners don't show a match, must be a little overlapped.
+// (Width not defined until runtime).
+function horizontalHitBoxMargin() {
+    return stepDimensions.width/32;
+}
+// So you don't have to be strictly overlapping vertically to show a match.
+let verticalHitBoxExtension = 5;
+
 function calculateBottomHitBox(element) {
     let bottom = element.offsetTop + element.offsetHeight;
     return {
-        x: element.offsetLeft,
-        width: element.offsetWidth,
-        y: element.offsetTop + element.offsetHeight - stepDimensions.height/2,
-        height: stepDimensions.height/2
+        x: element.offsetLeft + horizontalHitBoxMargin(),
+        width: element.offsetWidth - horizontalHitBoxMargin()*2,
+        y: element.offsetTop + element.offsetHeight - stepDimensions.height/4,
+        height: stepDimensions.height/4 + verticalHitBoxExtension
     }
 }
 
 function calculateTopHitBox(element) {
     return {
-        x: element.offsetLeft,
-        width: element.offsetWidth,
-        y: element.offsetTop,
-        height: stepDimensions.height/2
+        x: element.offsetLeft + horizontalHitBoxMargin(),
+        width: element.offsetWidth - horizontalHitBoxMargin()*2,
+        y: element.offsetTop - verticalHitBoxExtension,
+        height: stepDimensions.height/4
     }
 }
 
@@ -204,47 +212,71 @@ function handleSnaps(element, previousStep, previousBox, nextStep, nextBox) {
     if (nextBox) {
         collisionWithNext = collision(nextBox, calculateBottomHitBox(element));
     }
+    // Prioritize snapping with an upstream step over a downstream step.
     if (collisionWithPrevious) {
-        replaceWithGroup(previousStep, element);
+        groupSteps(previousStep, element);
     } else if (collisionWithNext) {
-        replaceWithGroup(element, nextStep);
+        groupSteps(element, nextStep);
     }
 }
 
 // Elements must be in the order they appear in the steps list.
-function replaceWithGroup(element1, element2) {
+function groupSteps(element1, element2) {
     let idx = derivationSteps.indexOf(element1);
     derivationSteps.splice(idx, 2);
+
     let group = createGroupElement(element1, element2);
     container.appendChild(group);
     setupDrag(group);
     derivationSteps.splice(idx, 0, group);
-    console.log(derivationSteps);
-}
+}    
 
 function createGroupElement(element1, element2) {
+    // Position the new group where the upstream step was.
     let left = element1.offsetLeft;
     let top = element1.offsetTop;
+    
     container.removeChild(element1);
     container.removeChild(element2);
     wasNotHit(element1);
     wasNotHit(element2);
-    element1.classList.add("grouped");
-    element2.classList.add("grouped");
-    
+
+    // The elements may already be groups, get the steps from within.
+    let steps = getStepsFromElement(element1).concat(getStepsFromElement(element2));
+    steps.forEach(step => {
+        // Remove the step in case it wasn't removed earlier.
+        if (step.parent) {
+            step.parent.removeChild(step);
+        }
+        // Let pointer events pass through to the group.
+        step.classList.add("grouped");
+    });
+
     let group = document.createElement("div");
     group.className = 'group';
 	group.style.width = px(stepDimensions.width);
-	group.style.height = px(stepDimensions.height*2);
+	group.style.height = px(stepDimensions.height*steps.length);
     group.style.left = px(left);
     group.style.top = px(top);
 
-    group.appendChild(element1);
-    group.appendChild(element2);
-    element1.style.top = px(0);
-    element1.style.left = px(0);
-    element2.style.top = px(stepDimensions.height);
-    element2.style.left = px(0);
+    steps.forEach((step, idx) => {
+        group.appendChild(step);
+        step.style.top = px(stepDimensions.height*idx);
+        step.style.left = px(0);
+    });
 
     return group;
+}
+
+function getStepsFromElement(element) {
+    if (element.classList.contains("step")) {
+        return [element];
+    } else {
+        // Make a non-collection copy of the element's children just in case.
+        let children = [];
+        for (let i=0; i<element.children.length; i++) {
+            children.push(element.children.item(i));
+        }
+        return children;
+    }
 }
