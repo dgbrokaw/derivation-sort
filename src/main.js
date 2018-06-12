@@ -1,26 +1,32 @@
 let margin = 50;
-
-function px(str) { return str + 'px' }
+let verticalStepMargin = 20;
 
 let container;
 let stepDimensions;
 let derivationSteps = [];
+
+function px(str) { return str + 'px' }
+
+// Limit 10 steps for prettiness or something.
 function initDerivationSteps(containerId, numberOfSteps) {
+    if (numberOfSteps > 10) {
+        numberOfSteps = 10;
+    }
     container = document.getElementById(containerId);
-    stepDimensions = calculateStepDimensions(container, numberOfSteps, margin);
-    let stepPositions = calculateStepPositions(stepDimensions, numberOfSteps, margin);
-    createDerivationSteps(container, stepDimensions, stepPositions);
+    stepDimensions = calculateStepDimensions(numberOfSteps);
+    let stepPositions = calculateStepPositions(stepDimensions, numberOfSteps);
+    createDerivationSteps(stepDimensions, stepPositions);
 }
 
-function calculateStepDimensions(container, numberOfSteps, margin) {
+function calculateStepDimensions(numberOfSteps) {
     let containerRect = container.getBoundingClientRect();
     return {
         width: Math.round((containerRect.width - (margin*2))/5),
-        height: Math.round((containerRect.height - (margin*2))/numberOfSteps)
+        height: Math.round((containerRect.height - (margin*2))/numberOfSteps) - verticalStepMargin
     };
 }
 
-function calculateStepPositions(stepDimensions, numberOfSteps, margin) {
+function calculateStepPositions(stepDimensions, numberOfSteps) {
     let positions = [];
     let top = margin;
     let leftColumnLeft = margin + stepDimensions.width;
@@ -29,13 +35,13 @@ function calculateStepPositions(stepDimensions, numberOfSteps, margin) {
         let position = [];
         position.push((i % 2 == 0) ? leftColumnLeft : rightColumnLeft);
         position.push(top);
-        top += stepDimensions.height;
+        top += stepDimensions.height + verticalStepMargin;
         positions.push(position);
     }
     return positions;
 }
 
-function createDerivationSteps(container, stepDimensions, stepPositions) {
+function createDerivationSteps(stepDimensions, stepPositions) {
     stepPositions.forEach((position, idx) => {
         let step = createDerivationStep(idx+1, stepDimensions, position);
         container.appendChild(step);
